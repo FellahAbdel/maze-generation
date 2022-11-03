@@ -123,6 +123,7 @@ __start:
     # Test de la fonction creerLaby
     # $a0 : taille du laby. ex $a0 = 5
     li $a0, 5
+    move $s1, $a0                        # la taille -> $s1
     jal creerLabyrinthe
 
 
@@ -152,13 +153,24 @@ __start:
     jal setValueCellIndiceI
 
 
-    # Affiche le laby après la avoir mis 16 à l'indice 3
+    # Affiche le laby après  avoir mis 16 à l'indice 3
     li $a0, 5
     jal afficheLaby
 
+    # Test de la fonction getCellVoisinSellonDirection
+    # $a0 : indice cell courante
+    # $a1 : addresse du laby
+    # $a2 : direction d
+    # $a3 : taille N du laby
+    # $v0 : l'indice du voisin si trouvé
 
-
-
+    li $a0, 2
+    move $a1, $s0
+    li $a2, 3                 # On peut changer  $a2, pour les autres voisins
+    move $a3, $s1
+    jal getIndiceVoisinSelonDirection
+    move $a0, $v0
+    jal AfficheEntier
 
 j Exit # saut a la fin du programme
 
@@ -918,6 +930,74 @@ getIndiceVoisinSelonDirection:
         addi $sp, $sp, 40 
     
         jr $ra
+
+#######################################################################
+
+
+################################# Fonction getIndicesToutesVoisines
+# Entrées :
+#   $a0 : Indice cellule courante
+#   $a1 : addresse du labyrinthe
+#   $a2 : Taille N du labyrinthe
+# Pré-conditions :
+#       $a0 app [0, N*N]
+# Sorties :
+#   $v0 : Addresse du tableau contenant toutes les cellules voisines
+getIndicesToutesVoisines:
+    # Prologue
+    addi $sp, $sp,-28 
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $a1, 8($sp)
+    sw $a2, 12($sp)
+    sw $s0, 16($sp)
+    sw $s1, 20($sp)
+    sw $s2, 24($sp)
+
+
+    move $s0, $a0               # indice cell courante -> $s0
+    move $s1, $a2               # Taille N -> $s1
+    # Corps de la fonction
+
+    # Création du tableau de cellule
+    li $a0, 16
+    li $v0, 9
+    syscall
+
+    move $s2, $v0                    # Addresse du tableau des voisins -> $s2
+
+
+    # $a0 : indice cell courante
+    # $a1 : addresse du laby
+    # $a2 : direction d
+    # $a3 : taille N du laby
+    # $v0 : l'indice du voisin si trouvé
+    li $a2, 0           # voisine en haut
+    move $a3, $s1
+    jal getCellVoisinSellonDirection
+    sw $v0, 0($s2)
+
+    li $a2, 1           # Voisine à droite
+    jal getCellVoisinSellonDirection
+    sw $v0, 4($s2)
+
+    li $a2, 2           # voisine en bas
+    jal getCellVoisinSellonDirection
+    sw $v0, 8($s2)
+
+    li $a2, 3           # voisine à gauche
+    sw $v0, 12($s2)
+
+    # Epilogue
+    move $v0, $s2
+    lw $ra, 0($sp)
+    lw $a0, 4($sp)
+    lw $a1, 8($sp)
+    lw $a2, 12($sp)
+    lw $s0, 16($sp)
+    lw $s1, 20($sp)
+    lw $s2, 24($sp)
+    addi $sp, $sp, 28 
 
 #################################Fonction AfficheTableau
 ###entrées: 
