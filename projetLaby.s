@@ -177,10 +177,11 @@ procedure:
 #       $v0 : addresse (en octet) du premier entier du tableau 
 convertToBinary:
     #Prologue
-    addi $sp, $sp, -12
+    addi $sp, $sp, -16
     sw $ra, 0($sp)
     sw $a0, 4($sp)
     sw $a1, 8($sp)
+    sw $s0, 12($sp)
 
     #corps de la fonction
     li $a0, 32  # 4*8 Nombre d'octet à allouer -> $a0
@@ -226,7 +227,8 @@ convertToBinary:
         lw $ra, 0($sp)
         lw $a0, 4($sp)
         lw $a1, 8($sp)
-        addi $sp, $sp, 12
+        lw $s0, 12($sp)
+        addi $sp, $sp, 16
 
         jr $ra
 
@@ -837,32 +839,85 @@ setValueCellIndiceI:
 
 ################################# Fonction getIndiceVoisinSelonDirection
 # Entrées :
-#   $a0: indice cellule courante
+#   $a0 : indice cellule courante
 #   $a1 : Adresse du laby
 #   $a2 : Direction (haut, droite, bas, gauche)
+#   $a3 : La taille N du laby
 # Pré-conditions:
 #   $a0 app [0, N*N]
 # Sorties :
 #   $v0 : indice de la celulle se trouvant à la direction $a2
+#         | ou indice cellule courante (si jamais y en a pas).
+#         e.g : cell inidice i = 0 pas de voisin en haut, donc $v0 = 0
 getIndiceVoisinSelonDirection:
     # Prologue
-    addi $sp, $sp, -16
+    addi $sp, $sp, -40
     sw $ra, 0($sp)
     sw $a0, 4($sp)
     sw $a1, 8($sp)
     sw $a2, 12($sp)
+    sw $a3, 16($sp)
+    sw $s0, 20($sp)
+    sw $s1, 24($sp)
+    sw $s2, 28($sp)
+    sw $s3, 32($sp)
+    sw $s4, 36($sp)
 
 
 
     # Corps de la fonction
+    move $s0, $a0                   # indice i -> $s0
+    move $s1, $a3                   # taille N -> $s1
+    div $s0, $s1
+    mfhi $s2                        # i % N -> $s2
+    
+    # Valeurs pour les tests
+    subi	$s3, $s1, 1			    # $s3 = $s1 - 1 | N-1
+    mul $s4, $s1, $s3               # $s4 = N*(N-1)
 
+    beq $a2, 0 voisinHaut
+    beq $a2, 1 voisinDroite
+    beq $a2, 2 voisinBas
+    beq $a2, 3 voisinGauche
+
+    voisinHaut:
+        blt		$s0, $s1, finVoisin	# if $s0 < $s1 then finVoisin (Pas de voisin en haut)
+        sub $v0, $s0, $s1           # sinon l'indice vaut i - N
+        j finGetIndiceVoisin
+        
+    voisinDroite:
+        beq		$s2, $s3, finVoisin	# if $s2 == $s3 then finVosin (Pas de voisin à droite)
+        addi $v0, $s0, 1            # else l'indice vaut i + 1
+        j finGetIndiceVoisin
+
+    voisinBas:
+        beq		$s0, $s4, finVoisin	# if $s0 == $s4 then finVosin (Pas de vosin en bas)
+        add $v0, $s0, $s1           # else l'indice vaut i + N
+        j finGetIndiceVoisin
+
+    voisinGauche:
+        beq		$s2, 0, finVoisin    # if $s2 (i%N) == 0 then finVoisin (Pas de voisin a gauche) 
+        subi $v0, $s0, 1            # else l'indice vaut i - 1
+        j finGetIndiceVoisin
+        
+    finVoisin:
+        move $v0, $a0
 
     # Epilogue
-    lw $ra, 0($sp)
-    lw $a0, 4($sp)
-    lw $a1, 8($sp)
-    lw $a2, 12($sp)
-    addi $sp, $sp, 16
+    finGetIndiceVoisin:
+        lw $ra, 0($sp)
+        lw $a0, 4($sp)
+        lw $a1, 8($sp)
+        lw $a2, 12($sp)
+        lw $a3, 16($sp)
+        lw $s0, 20($sp)
+        lw $s1, 24($sp)
+        lw $s2, 28($sp)
+        lw $s3, 32($sp)
+        lw $s4, 36($sp)
+        addi $sp, $sp, 40 
+    
+        jr $ra
 
 #################################Fonction AfficheTableau
 ###entrées: 
