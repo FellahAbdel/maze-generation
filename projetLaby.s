@@ -130,32 +130,32 @@ __start:
     # Test de la fonction afficheLaby
     # $a0 : taille du laby
     # $a1 : Adresse du laby
-    # move $s0, $v0
-    # move $a1, $s0
-    #jal afficheLaby
+    move $s0, $v0
+    move $a1, $s0
+    jal afficheLaby
 
     # Test de la fonction getValueCellIndiceI
     # $a0 : indice i
     # $a1 : addresse du laby
     # $v0 : la valeur se trouvant à l'indice i
-    #li $a0, 3
-    #jal getValueCellIndiceI
-    #move $a0, $v0
-    #jal AfficheEntier
+    li $a0, 3
+    jal getValueCellIndiceI
+    move $a0, $v0
+    jal AfficheEntier
 
     # Test de la fonction setValueCellIndiceI
     # $a0 : l'indice i [0, N*N]
     # $a1 : addresse du laby
     # $a2 : nouvelle valeur à mettre
-    #li $a0, 3
-    #move $a1, $s0
-    #li $a2, 16
-    #jal setValueCellIndiceI
+    li $a0, 3
+    move $a1, $s0
+    li $a2, 16
+    jal setValueCellIndiceI
 
 
     # Affiche le laby après  avoir mis 16 à l'indice 3
-    #li $a0, 5
-    #jal afficheLaby
+    li $a0, 5
+    jal afficheLaby
 
     # Test de la fonction getCellVoisinSellonDirection
     # $a0 : indice cell courante
@@ -164,26 +164,38 @@ __start:
     # $a3 : taille N du laby
     # $v0 : l'indice du voisin si trouvé
 
-    #li $a0, 2
-    #move $a1, $s0
-    #li $a2,     3          # On peut changer  $a2, pour les autres voisins
-    #move $a3, $s1
-    #jal getIndiceVoisinSelonDirection
-    #move $a0, $v0
-    #jal AfficheEntier
+    li $a0, 2
+    move $a1, $s0
+    li $a2,     3          # On peut changer  $a2, pour les autres voisins
+    move $a3, $s1
+    jal getIndiceVoisinSelonDirection
+    move $a0, $v0
+    jal AfficheEntier
 
 
     # Test de la fonction getIndicesToutesVoisines
     # $a0 : l'indice de la cellule courante
     # $a1 : l'addresse du labyrinthe
     # $a2 : Taille du laby
-    li $a0, 24
+    # $v0 : Addresse des cellules voisines
+    li $a0, 8
     move $a1, $s0
     li $a2, 5
     jal getIndicesToutesVoisines
-    move $a1, $v0
-    lw $a0, 16($v0)
+    move $s0, $v0
+    move $a1, $s0
+    lw $a0, 16($v0)                         # la taille du tableau -> 16($v0)
     jal AfficheTableau
+
+
+    # Test de la fonction aleaCellVoisines
+    # $a0 : adresse des cellules voisines
+    # $v0 : une cellule tirée aléatoirement parmis ces voisins
+    move $a0, $s0
+    jal aleaCellVoisines
+    move $a0, $v0
+    jal AfficheEntier
+
 
 j Exit # saut a la fin du programme
 
@@ -1046,10 +1058,11 @@ getIndicesToutesVoisines:
 #   $v0 : L'indice d'une cellule tiré aléatoirement
 aleaCellVoisines:
     # Prologue
-    addi $sp, $sp, -12
+    addi $sp, $sp, -16
     sw $ra, 0($sp)
     sw $a0, 4($sp)
     sw $s0, 8($sp)
+    sw $a1, 12($sp)
 
     # Corps de la fonction
     move $s0, $a0
@@ -1062,7 +1075,8 @@ aleaCellVoisines:
     lw $ra, 0($sp)
     lw $a0, 4($sp)
     lw $s0, 8($sp)
-    addi $sp, $sp, 12
+    lw $a1, 12($sp)
+    addi $sp, $sp, 16 
 
     jr $ra
 
