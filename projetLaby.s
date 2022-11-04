@@ -122,15 +122,15 @@ __start:
 
     # Test de la fonction creerLaby
     # $a0 : taille du laby. ex $a0 = 5
-    li $a0, 5
-    move $s1, $a0                        # la taille -> $s1
+    li $s1, 5
+    move $a0, $s1                       # la taille -> $s
     jal creerLabyrinthe
 
 
     # Test de la fonction afficheLaby
     # $a0 : taille du laby
     # $a1 : Adresse du laby
-    move $s0, $v0
+    move $s0, $v0                      # On sauvegarde addresse du 1er octet du laby -> $s0
     move $a1, $s0
     jal afficheLaby
 
@@ -178,12 +178,12 @@ __start:
     # $a1 : l'addresse du labyrinthe
     # $a2 : Taille du laby
     # $v0 : Addresse des cellules voisines
-    li $a0, 8
+    li $a0, 0
     move $a1, $s0
     li $a2, 5
     jal getIndicesToutesVoisines
-    move $s0, $v0                           # On sauvegarde l'addresse du premier octet
-    move $a1, $s0                           # Addresse du labyrinthe -> $a1
+    move $s2, $v0                           # On sauvegarde l'addresse du premier octet
+    move $a1, $s2                           # Addresse du labyrinthe -> $a1
     lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
     jal AfficheTableau                      # Affiche toutes les cellules voisines
 
@@ -191,10 +191,23 @@ __start:
     # Test de la fonction aleaCellVoisines
     # $a0 : adresse des cellules voisines
     # $v0 : une cellule tirée aléatoirement parmis ces voisins
-    move $a0, $s0                           # Addresse du 1er octet du tableau de toutes les cellules voisines
+    move $a0, $s2                           # Addresse du 1er octet du tableau de toutes les cellules voisines
     jal aleaCellVoisines                    # Tire moi une cellule parmis tes voisins
     move $a0, $v0                           # l'indice de la cellule tiré -> $a0
     jal AfficheEntier                       # Affiche l'indice de la cellule tiré
+
+
+    # Test de la fonction MarqueVisite
+    # $a0 : l'indice
+    # $a1 : l'addresse du 1er octet du laby
+    li $a0, 0                               # On marque la cell 0 comme visite
+    move $a1, $s0                           # Addresse du laby -> $a1
+    jal marqueVisite                        # On marque la cell 0 visitee
+
+    # On affice le laby après avoir marquee la cell 0 comme visitée
+    move $a0, $s1                           # la taille du laby 
+    move $a1, $s0                           # l'addresse du laby
+    jal afficheLaby
 
 j Exit # saut a la fin du programme
 
@@ -1081,7 +1094,7 @@ aleaCellVoisines:
 
 ###########################################################################
 
-#################################Fonction marqueVisite
+################################# Fonction marqueVisite
 # Entrées:
 #   $a0 : L'indice de la cellule à marquer visiter
 #   $a1 : l'addresse du 1er octet du laby 
@@ -1111,12 +1124,55 @@ marqueVisite:
     lw $a0, 4($sp)
     lw $a1, 8($sp)
     lw $s0, 12($sp)
-    addi $sp, $sp, -16
+    addi $sp, $sp, 16
 
     jr $ra
 
 ##########################################################################
 
+################################ Fonction testeVisite #####################
+# Entrées:
+#   $a0 : l'indice de la cellule à tester si visite
+#   $a1 : l'addresse du 1er octet du laby
+# Pré-conditions
+# Sorties:
+#    $v0 : (= 1 si oui) ( = 0 si non)
+testeViste:
+    # Prologue
+    addi $sp, $sp, -16
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $a1, 8($sp)
+    sw $s0, 12($sp)
+
+
+    # Corps de la fonction
+    # Même paramettre que la fonction testeVisite
+    jal getValueCellIndiceI
+    move $s0, $v0
+
+    # si $s0 >= 128 alors la cellule a été visitée
+    bge		$s0, 128, vraiDejaVisite	# if $s0 >= 128 then vraiDejaVisite
+    
+    # sinon
+    li $v0, 0
+    j finTesteVisite
+
+    vraiDejaEteVisite:
+        li $v0, 1
+        j finTesteVisite
+
+    # Epilogue
+    finTesteVisite:
+        lw $ra, 0($sp)
+        lw $a0, 4($sp)
+        lw $a1, 8($sp)
+        lw $s0, 12($sp)
+        addi $sp, $sp, 16
+
+        jr $ra
+
+##########################################################################
 #################################Fonction AfficheTableau
 ###entrées: 
 ###   $a0: taille (en nombre d'entiers) du tableau à afficher
