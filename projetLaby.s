@@ -182,20 +182,19 @@ __start:
     move $a1, $s0
     li $a2, 5
     jal getIndicesToutesVoisines
-    move $s0, $v0
-    move $a1, $s0
-    lw $a0, 16($v0)                         # la taille du tableau -> 16($v0)
-    jal AfficheTableau
+    move $s0, $v0                           # On sauvegarde l'addresse du premier octet
+    move $a1, $s0                           # Addresse du labyrinthe -> $a1
+    lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
+    jal AfficheTableau                      # Affiche toutes les cellules voisines
 
 
     # Test de la fonction aleaCellVoisines
     # $a0 : adresse des cellules voisines
     # $v0 : une cellule tirée aléatoirement parmis ces voisins
-    move $a0, $s0
-    jal aleaCellVoisines
-    move $a0, $v0
-    jal AfficheEntier
-
+    move $a0, $s0                           # Addresse du 1er octet du tableau de toutes les cellules voisines
+    jal aleaCellVoisines                    # Tire moi une cellule parmis tes voisins
+    move $a0, $v0                           # l'indice de la cellule tiré -> $a0
+    jal AfficheEntier                       # Affiche l'indice de la cellule tiré
 
 j Exit # saut a la fin du programme
 
@@ -1081,6 +1080,42 @@ aleaCellVoisines:
     jr $ra
 
 ###########################################################################
+
+#################################Fonction marqueVisite
+# Entrées:
+#   $a0 : L'indice de la cellule à marquer visiter
+#   $a1 : l'addresse du 1er octet du laby 
+# Sorties:
+#   On modifie la valeur à l'indice $a0
+marqueVisite:
+    # Prologue
+    addi $sp, $sp, -16
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $a1, 8($sp)
+    sw $s0, 12($sp)
+
+
+    # Corps de la fonction
+    # Il a les même arguments que marqueVisite
+    jal getValueCellIndiceI
+    move $s0, $v0                          # On recupère la valeur à cet indice -> $s0
+    addi $s0, $s0, 128                     # On met le 7eme bit à 1
+
+    move $a2, $s0                          # La nouvelle valeur à mettre
+    jal setValueCellIndiceI                # On reecrit la nouvelle valeur
+
+
+    # Epilogue
+    lw $ra, 0($sp)
+    lw $a0, 4($sp)
+    lw $a1, 8($sp)
+    lw $s0, 12($sp)
+    addi $sp, $sp, -16
+
+    jr $ra
+
+##########################################################################
 
 #################################Fonction AfficheTableau
 ###entrées: 
