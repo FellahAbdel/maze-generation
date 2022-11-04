@@ -1038,6 +1038,35 @@ getIndicesToutesVoisines:
         addi $sp, $sp, 44 
 
     jr $ra
+#########################################################################
+################################# Fonction aleaCellVoisines
+# Entrées : 
+#   $a0 : addresse du tableau des celulles voisines
+# Sorties :
+#   $v0 : L'indice d'une cellule tiré aléatoirement
+aleaCellVoisines:
+    # Prologue
+    addi $sp, $sp, -12
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $s0, 8($sp)
+
+    # Corps de la fonction
+    move $s0, $a0
+    lw $a1, 16($a0)         # Nombre de cellule voisines
+    li $v0, 42  
+    syscall                 # $a0 contient un nombre entre [0, $a1[
+    move $v0, $a0           # On recupère cette valeur
+
+    # Epilogue
+    lw $ra, 0($sp)
+    lw $a0, 4($sp)
+    lw $s0, 8($sp)
+    addi $sp, $sp, 12
+
+    jr $ra
+
+###########################################################################
 
 #################################Fonction AfficheTableau
 ###entrées: 
