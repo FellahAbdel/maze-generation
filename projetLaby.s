@@ -163,7 +163,6 @@ __start:
     # $a2 : direction d
     # $a3 : taille N du laby
     # $v0 : l'indice du voisin si trouvé
-
     li $a0, 2
     move $a1, $s0
     li $a2,     3          # On peut changer  $a2, pour les autres voisins
@@ -208,6 +207,15 @@ __start:
     move $a0, $s1                           # la taille du laby 
     move $a1, $s0                           # l'addresse du laby
     jal afficheLaby
+
+    # Test de la fonction testeVisite
+    # $a0 : L'indice de la cellule à tester
+    # $a1 : l'addresse du labyrinthe
+    li $a0, 0                           # la cell d'indice où on 143
+    move $a1, $s0                       # l'addresse du laby
+    jal testeVisite
+    move $a0, $v0
+    jal AfficheEntier                   # affiche 1 car la cellule à été visité
 
 j Exit # saut a la fin du programme
 
@@ -1137,7 +1145,7 @@ marqueVisite:
 # Pré-conditions
 # Sorties:
 #    $v0 : (= 1 si oui) ( = 0 si non)
-testeViste:
+testeVisite:
     # Prologue
     addi $sp, $sp, -16
     sw $ra, 0($sp)
@@ -1152,9 +1160,9 @@ testeViste:
     move $s0, $v0
 
     # si $s0 >= 128 alors la cellule a été visitée
-    bge		$s0, 128, vraiDejaVisite	# if $s0 >= 128 then vraiDejaVisite
+    bge		$s0, 128, vraiDejaEteVisite	# if $s0 >= 128 then vraiDejaVisite
     
-    # sinon
+    # sinon, elle a été
     li $v0, 0
     j finTesteVisite
 
@@ -1173,7 +1181,91 @@ testeViste:
         jr $ra
 
 ##########################################################################
-#################################Fonction AfficheTableau
+
+################################# Fonction voisinsNonVisites
+# Entrées :
+#   $a0 : l'indice de la cellule courante
+#   $a1 : l'addresse du 1er octet du labyrinthe
+# Sorties :
+#   $v0 : l'addresse du 1er octet des cellules non visités
+voisinsNonVisites:
+    # Prologue
+    addi $sp, $sp, -44
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $a1, 8($sp)
+    sw $s0, 12($sp)
+    sw $s1, 16($sp)
+    sw $s2, 20($sp)
+    sw $s3, 24($sp)
+    sw $s4, 28($sp)
+    sw $s5, 32($sp)
+    sw $s6, 36($sp)
+    sw $s7, 40($sp) 
+
+    # Corps de la fonction
+
+    # Allocation pour cellules non visités
+    li $a0, 20                        # La dernière case c'est pour la taille
+    li $v0, 9
+    syscall                           # Allocation
+
+    move $s0, $v0                     # addresse du 1er octet des cellule non visitées -> $s0
+
+    lw $a0, 4($sp)
+    jal getIndicesToutesVoisines      # Toutes les cellules voisines de $a0 -> $v0
+    move $s1, $v0                     # Addresse du 1er octet de toutes les cellules voisines
+
+    # On parcourt toutes les voisines 
+    li $s5, 0                         # iterateur j pour cellNonVisites
+    lw $s3, 16($s1)                   # la taille du tableau des cellules voisines -> $s3
+    li $s2, 0 
+    loopToutesLesVoisines: beq $s2, $s3 finVoisinsNonVisites
+        # si elle n'est pas visitées, on la rajoute
+        mul $s4, $s2, 4               # i*4
+        add $s4, $s1, $s4             # t + i*4
+        lw $a0, 0($s4)                # L'indice du voisin se trouvant dans tab voisins -> $a0
+        jal testeVisite
+
+        # si $v0 = 0 , on rajoute
+        beq		$v0, 0, rajouteCellIncrementeTaille	# if $v0 == 0 then rajouteCell
+        # sinon
+        j finIfElseLoopToutesVoisines
+
+        rajouteCellIncrementeTaille:
+            mul $s6, $s5, 4                     # i*4
+            add $s6, $s0, $s6                   # t + i*4
+            sw $a0, 0($s6)                      # Ecriture de l'indice de la cellule non visité
+            
+            # Mise à jour de la taille
+            lw $s7, 16($s0)                     # taille actuelle -> $s7
+            addi $s7, $s7, 1                    # Ajoute 1 à la taille actuelle
+            sw $s7, 16($s0)                     # Ecris la nouvelle taille
+
+            addi $s5, $s5, 1                    # Incremente la compteur j
+        
+        finIfElseLoopToutesVoisines:
+            addi $s2, $s2, 1
+            j loopToutesLesVoisines
+
+
+    # Epilogue
+    finVoisinsNonVisites:
+        addi $sp, $sp, 44
+        lw $ra, 0($sp)
+        lw $a0, 4($sp)
+        lw $a1, 8($sp)
+        lw $s0, 12($sp)
+        lw $s1, 16($sp)
+        lw $s2, 20($sp)
+        lw $s3, 24($sp)
+        lw $s4, 28($sp)
+        lw $s5, 32($sp)
+        lw $s6, 36($sp)
+        lw $s7, 40($sp) 
+
+        jr $ra
+################################# Fonction AfficheTableau
 ###entrées: 
 ###   $a0: taille (en nombre d'entiers) du tableau à afficher
 ###   $a1: l'addresse du tableau à afficher
