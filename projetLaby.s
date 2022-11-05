@@ -82,6 +82,7 @@ __start:
     # #Test de la fonction st_empiler
     # li $a0, 5               # la taille maximale du tableau
     # jal st_creer
+
     # move $s0, $v0           # l'addresse du tableau -> $s0
     # move $a0, $s0
 
@@ -109,7 +110,7 @@ __start:
     # move $a0, $v0
     # jal AfficheEntier
     # # Test de la fonction st_depiler
-    # # $a0 : l'addresse du tableau
+    # # $a0 : l'addresse du tableau d'entiers
     # move $a0, $s0
     # jal st_depiler
 
@@ -189,7 +190,7 @@ __start:
 
 
     # Test de la fonction aleaCellVoisines
-    # $a0 : adresse des cellules voisines
+    # $a0 : adresse du 1er octet des cellules voisines
     # $v0 : une cellule tirée aléatoirement parmis ces voisins
     move $a0, $s2                           # Addresse du 1er octet du tableau de toutes les cellules voisines
     jal aleaCellVoisines                    # Tire moi une cellule parmis tes voisins
@@ -222,6 +223,7 @@ __start:
     # Test de la fonction voisinsNonVisite
     # $a0 : Indice de la cellule courante
     # $a1 : Addresse du laby
+    # $v0 : Addresse des cellules non visites
     li $a0, 0
     move $a1, $s0
     move $a2, $s1
@@ -246,6 +248,17 @@ __start:
     li $a0, 5                           # la taille du laby 
     move $a1, $s0                       # l'addresse du laby
     jal afficheLaby
+
+
+    # Teste de la fonction genererLabyrinthe
+    # $a0 : Taille N du laby
+    li $a0, 5
+    jal genererLabyrinthe
+
+
+    #li $a0, 5                           # la taille du laby 
+    #move $a1, $v0                       # l'addresse du laby
+    #jal afficheLaby
 
 j Exit # saut a la fin du programme
 
@@ -562,9 +575,6 @@ st_est_vide:
     addi $sp, $sp, -8
     sw $ra, 0($sp)
     sw $a0, 4($sp)
-
-
-
 
     # Corps de la fonction
     lw $t0, 4($a0)                  # la hauteur -> $t0
@@ -1445,6 +1455,101 @@ casserMurs:
         lw $s0 , 16($sp)
         lw $s1 , 20($sp)
         addi $sp, $sp , 24
+
+        jr $ra
+###########################################################################
+################################# Fonction genererLabyrinthe
+# Entrés:
+#      $a0 : Taille N du labyrinthe
+# Pré-conditions:
+#      $a0 > 0 
+# Sorties:
+#      $v0 : Addresse du 1 er octet du labyrinthe generer
+genererLabyrinthe:
+    # Prologue
+    addi $sp, $sp, -16
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $s0, 8($sp)
+    sw $s1, 12($sp)
+
+    # Corps de la fonction
+    # 1- Création du labyrinthe
+    jal creerLabyrinthe
+    move $s0, $v0                   # addresse du 1er octet du laby  -> $s0
+
+    # 2- Création d'une pile de cellules
+    li $a0, 200                     # MAX 200 la pile pourra contenir 200 entiers
+    jal st_creer
+    move $s1, $v0                   # Addresse du 1er octet de la pile d'entiers -> $s1
+
+    # 3 - Depart
+    li $t0, 0                       # Cellule courante
+    move $a0, $t0                   # l'indice de la 1ère cellule
+    move $a1, $s0                   # l'addresse du laby
+    jal marqueVisite
+
+    move $a1, $a0                   # l'entier (indice courante) à empiler
+    move $a0, $s1                   # Addresse de la pile d'entiers
+    jal st_empiler                  # On empile la cellule courante
+
+    li $t1, 0                       # là la pile d'entiers n'est pas vide
+    whilePileNonVide: bnez $t1 finGenererLabyrinthe
+        move $a0, $t0               # Cellule courante
+        move $a1, $s0               # Adresse du laby
+        jal voisinsNonVisites
+
+        # S'il y aucune cellule voisine qui n'a été visite, on depile
+        lw $t2, 16($v0)                     # Le nombre de cellule voisines non visités -> $t2
+        bgez $t2 onDepile                   # Depilement
+        
+        # Sinon
+        move $a0, $v0                       # Adresse du 1er octet des cellules voisines non visites -> $a0
+        jal aleaCellVoisines                # Tire moi une cellule parmis les voisines non visités
+        
+        move $a2, $v0                       #$a2 : indice du voisin de la cellule courante non visité
+        lw $a0, 4($sp)                      #$a0 : entier N entrer par l'utilisateur 
+        move $a1, $t0                       #$a1 : indice de la cellule courante : X
+        jal DirectionVoisin                 # la direction d'où il faut casser le mur
+
+                                            # $a1 : addresse du laby
+        move $a0, $t0                       # $a0 : Indice cellule courante
+        move $a1, $s0                       # $a1 : addresse du laby
+        move $a3, $v0                       # $a3 : Direction d, où l'on va
+        jal casserMurs
+        
+        move $t0, $a2                       # On fait de C' la cellule courante
+
+        move $a0, $t0                       # $a0: l'indice de la cellule courante
+        move $a1, $s0                       # $a1: l'addresse du laby
+        jal marqueVisite                    # On marque C' comme visitée
+
+        move $a0, $s1                       # $a0: Addresse de la pile d'entiers
+        move $a1, $t0                       # $a1: Valeur (indice) à empiler
+        jal st_empiler                      # On empile la cellule courante
+
+        j finIfElseGenererLaby
+
+        onDepile:
+            move $a0, $s1                   # Addresse de la pile d'entiers à depiler
+            jal st_depiler                  # depilement
+            jal st_sommet                   # Le sommet
+            move $t0, $v0                   # La cellule courante        
+
+        finIfElseGenererLaby:
+            move $a0, $s1                   # $a0 : Adresse de la pile d'entiers
+            jal st_est_vide
+            move $t1, $v0
+            j whilePileNonVide
+
+    # Epilogue
+    finGenererLabyrinthe:
+        move $v0, $s0
+        lw $ra, 0($sp)
+        lw $a0, 4($sp)
+        lw $s0, 8($sp)
+        lw $s1, 12($sp)
+        addi $sp, $sp, 16
 
         jr $ra
 ###########################################################################

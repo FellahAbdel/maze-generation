@@ -1,3 +1,4 @@
+
 #!/bin/sh
 
 #           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
