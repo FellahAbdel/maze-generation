@@ -125,6 +125,7 @@ __start:
     li $s1, 5
     move $a0, $s1                       # la taille -> $s1
     jal creerLabyrinthe
+    move $s7, $v0
 
 
     # Test de la fonction afficheLaby
@@ -229,6 +230,22 @@ __start:
     move $a1, $v0
     lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
     jal AfficheTableau                      # Affiche toutes les cellules voisines
+
+    # Test de la fonction casserMurs
+    # $a0 : Indice cellule courante
+    # $a1 : addresse du laby
+    # $a2 : indice cellule voisine non visité
+    # $a3 : Direction d, où l'on va
+    li $a0, 7
+    move $a1, $s0
+    li $a2,8
+    li $a3, 1
+    jal casserMurs 
+
+
+    li $a0, 5                           # la taille du laby 
+    move $a1, $s0                       # l'addresse du laby
+    jal afficheLaby
 
 j Exit # saut a la fin du programme
 
@@ -1360,7 +1377,7 @@ DirectionVoisin:
 ##      $a3 = Valeur de la direction dans laquelle on va (0 : haut, 1 : droite, 2 : bas, 3 : gauche)
 ## Sortie :
 ##      On modifie le labyrinthe
-CasserMurs:
+casserMurs:
     # prologue 
     addi $sp, $sp , -24
     sw $ra , 0($sp)
@@ -1424,8 +1441,8 @@ CasserMurs:
         lw $ra , 0($sp)
         lw $a0 , 4($sp)
         lw $a1 , 8($sp)
-        lw $s0 , 12($sp)
-        lw $s1 , 16($sp)
+        lw $a2, 12($sp)
+        lw $s0 , 16($sp)
         lw $s1 , 20($sp)
         addi $sp, $sp , 24
 
