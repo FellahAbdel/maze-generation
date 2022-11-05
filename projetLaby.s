@@ -123,7 +123,7 @@ __start:
     # Test de la fonction creerLaby
     # $a0 : taille du laby. ex $a0 = 5
     li $s1, 5
-    move $a0, $s1                       # la taille -> $s
+    move $a0, $s1                       # la taille -> $s1
     jal creerLabyrinthe
 
 
@@ -216,6 +216,19 @@ __start:
     jal testeVisite
     move $a0, $v0
     jal AfficheEntier                   # affiche 1 car la cellule à été visité
+
+
+    # Test de la fonction voisinsNonVisite
+    # $a0 : Indice de la cellule courante
+    # $a1 : Addresse du laby
+    li $a0, 0
+    move $a1, $s0
+    move $a2, $s1
+    jal voisinsNonVisites
+    
+    move $a1, $v0
+    lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
+    jal AfficheTableau                      # Affiche toutes les cellules voisines
 
 j Exit # saut a la fin du programme
 
@@ -1186,11 +1199,12 @@ testeVisite:
 # Entrées :
 #   $a0 : l'indice de la cellule courante
 #   $a1 : l'addresse du 1er octet du labyrinthe
+#   $a2 : la taille du laby N
 # Sorties :
 #   $v0 : l'addresse du 1er octet des cellules non visités
 voisinsNonVisites:
     # Prologue
-    addi $sp, $sp, -44
+    addi $sp, $sp, -48
     sw $ra, 0($sp)
     sw $a0, 4($sp)
     sw $a1, 8($sp)
@@ -1202,6 +1216,7 @@ voisinsNonVisites:
     sw $s5, 32($sp)
     sw $s6, 36($sp)
     sw $s7, 40($sp) 
+    sw $a2, 44($sp)
 
     # Corps de la fonction
 
@@ -1212,14 +1227,15 @@ voisinsNonVisites:
 
     move $s0, $v0                     # addresse du 1er octet des cellule non visitées -> $s0
 
-    lw $a0, 4($sp)
+    li $a0, 1                    # On restore l'indice
     jal getIndicesToutesVoisines      # Toutes les cellules voisines de $a0 -> $v0
     move $s1, $v0                     # Addresse du 1er octet de toutes les cellules voisines
+
 
     # On parcourt toutes les voisines 
     li $s5, 0                         # iterateur j pour cellNonVisites
     lw $s3, 16($s1)                   # la taille du tableau des cellules voisines -> $s3
-    li $s2, 0 
+    li $s2, 0                         # iterateur i pour toutes les cellules visités
     loopToutesLesVoisines: beq $s2, $s3 finVoisinsNonVisites
         # si elle n'est pas visitées, on la rajoute
         mul $s4, $s2, 4               # i*4
@@ -1228,7 +1244,7 @@ voisinsNonVisites:
         jal testeVisite
 
         # si $v0 = 0 , on rajoute
-        beq		$v0, 0, rajouteCellIncrementeTaille	# if $v0 == 0 then rajouteCell
+        beqz		$v0 rajouteCellIncrementeTaille	# if $v0 == 0 then rajouteCell
         # sinon
         j finIfElseLoopToutesVoisines
 
@@ -1242,7 +1258,7 @@ voisinsNonVisites:
             addi $s7, $s7, 1                    # Ajoute 1 à la taille actuelle
             sw $s7, 16($s0)                     # Ecris la nouvelle taille
 
-            addi $s5, $s5, 1                    # Incremente la compteur j
+            addi $s5, $s5, 1                    # Incremente le compteur j
         
         finIfElseLoopToutesVoisines:
             addi $s2, $s2, 1
@@ -1251,7 +1267,7 @@ voisinsNonVisites:
 
     # Epilogue
     finVoisinsNonVisites:
-        addi $sp, $sp, 44
+        move $v0, $s0
         lw $ra, 0($sp)
         lw $a0, 4($sp)
         lw $a1, 8($sp)
@@ -1263,6 +1279,8 @@ voisinsNonVisites:
         lw $s5, 32($sp)
         lw $s6, 36($sp)
         lw $s7, 40($sp) 
+        lw $a2, 44($sp)
+        addi $sp, $sp, 48
 
         jr $ra
 ################################# Fonction AfficheTableau
