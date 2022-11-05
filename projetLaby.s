@@ -1152,6 +1152,7 @@ marqueVisite:
 ##########################################################################
 
 ################################ Fonction testeVisite #####################
+# Permet de tester si cellule a été visité
 # Entrées:
 #   $a0 : l'indice de la cellule à tester si visite
 #   $a1 : l'addresse du 1er octet du laby
@@ -1196,6 +1197,7 @@ testeVisite:
 ##########################################################################
 
 ################################# Fonction voisinsNonVisites
+# Retourne toutes les cellules voisines qui n'ont pas encore été visité
 # Entrées :
 #   $a0 : l'indice de la cellule courante
 #   $a1 : l'addresse du 1er octet du labyrinthe
@@ -1283,6 +1285,153 @@ voisinsNonVisites:
         addi $sp, $sp, 48
 
         jr $ra
+
+########################################################################
+####################################### fonction DirectionVoisin
+#### Entrés : 
+####      $a0 : entier N entrer par l'utilisateur 
+#### 	  $a1 : indice de la cellule courante : X
+####	  $a2 : indice du voisin de la cellule courante non visité
+#### Sortie : 
+#         $v0 : direction du voisin ( 0 : haut | 1 : droite | 2 : bas | 3 : gauche)
+
+DirectionVoisin: 
+    # prologue 
+    addi $sp, $sp , -36
+    sw $ra , 0($sp)
+    sw $a0 , 4($sp)
+    sw $a1 , 8($sp)
+    sw $s0 , 12($sp)
+    sw $s1 , 16($sp)
+    sw $s1 , 20($sp)
+    sw $s2 , 24($sp)
+    sw $s3 , 28($sp)
+    sw $a2 , 32($sp)
+
+    # Corps de la fonction
+    add $s2 , $a1 , $a0 						# X + N -> $s2 : bas 
+    sub $s0 , $a1 , $a0							# X - N -> $s0 : haut
+    addi $s1 , $a1,  1							# X + 1 -> $s1 : droite
+    addi $s3 , $a1, -1							# X - 1 -> $s3 : gauche
+
+
+    beq $a2 , $s0 , VoisinHaut1
+    beq $a2 , $s1 , VoisinDroite1
+    beq $a2 , $s2 , VoisinBas1
+    beq $a2 , $s3 , VoisinGauche1
+
+    VoisinHaut1 : 
+    li $v0 0
+    j FinDirectionVoisin
+
+    VoisinDroite1 :
+    li $v0 1
+    j FinDirectionVoisin
+
+    VoisinBas1 : 
+    li $v0 2
+    j FinDirectionVoisin
+
+    VoisinGauche1 :
+    li $v0 3
+
+    #epilogue 
+    FinDirectionVoisin : 
+        lw $ra , 0($sp)
+        lw $a0 , 4($sp)
+        lw $a1 , 8($sp)
+        lw $s0 , 12($sp)
+        lw $s1 , 16($sp)
+        lw $s1 , 20($sp)
+        lw $s2 , 24($sp)
+        lw $s3 , 28($sp)
+        lw $a2 , 32($sp)
+        addi $sp, $sp , 36
+
+        jr $ra
+#######################################################################
+
+################################### Fonction casserMurs
+##  Fonction qui sert à détruire les murs
+##  Entrée :
+##      $a0 = Indice de la case précédente (case courante)
+##      $a1 = adresse du premier élément du tableau
+##      $a2 = Indice de la nouvelle case   (case tirée aleatoire parmis les voisins non visités)
+##      $a3 = Valeur de la direction dans laquelle on va (0 : haut, 1 : droite, 2 : bas, 3 : gauche)
+## Sortie :
+##      On modifie le labyrinthe
+CasserMurs:
+    # prologue 
+    addi $sp, $sp , -24
+    sw $ra , 0($sp)
+    sw $a0 , 4($sp)
+    sw $a1 , 8($sp)
+    sw $a2 , 12($sp)
+    sw $s0 , 16($sp)
+    sw $s1 , 20($sp)
+
+
+    # Corps de la fonction
+    jal getValueCellIndiceI
+    move $s0, $v0                 # valeur de la case précédente du laby -> $s0
+
+    lw $a0, 12($sp)
+    jal getValueCellIndiceI
+    move $s1, $v0                 # valeur de la nouvelle case tiré aleatoirement -> $s1
+
+    beq $a3 0 allerHaut           # Si $a3 vaut 0 cela veut dire que l'on se déplace en haut
+    beq $a3 1 allerDroite         # Si $a3 vaut 1 cela veut dire que l'on se déplace à droite
+    beq $a3 2 allerBas            # Si $a3 vaut 2 cela veut dire que l'on se déplace en bas
+    beq $a3 3 allerGauche         # Si $a3 vaut 3 cela veut dire que l'on se déplace à gauche
+
+    allerHaut:
+        lw $a0, 4($sp)            # indice de la cellule precedente -> $a0
+        subi $a2, $s0, 1          # On soustrait 1 à la valeur de la case précédente -> $a2
+        jal setValueCellIndiceI   # On détruit le mur du haut de la case précédente
+        lw $a0, 12($sp)           # indice de la nouvelle cellule  -> $a0
+        subi $a2, $s1, 4          # On soustrait 4 ( 100 en binaire) à la valeur de la nouvelle case -> $a2
+        jal setValueCellIndiceI   # On détruit le mur du bas de la nouvelle case
+        j finCasserMurs
+
+    allerDroite:
+        lw $a0, 4($sp)
+        subi $a2, $s0, 2          # On soustrait 2 (10 en binaire) à la valeur de la case précédente
+        jal setValueCellIndiceI   # On detruit le mur à droite de la case précédente
+        lw $a0, 12($sp)           # Indice de la nouvelle cellule  -> $a0
+        subi $a2, $s1, 8          # On soustrait 8 (1000 en binaire) à la valeur de la nouvelle case
+        jal setValueCellIndiceI   # On détruit le mur de gauche de la nouvelle case
+        j finCasserMurs
+
+    allerBas:
+        lw $a0, 4($sp)
+        subi $a2, $s0, 4          # On soustrait 4 (100 en binaire) à la valeur de la case précédente
+        jal setValueCellIndiceI   # On détruit le mur du bas de la case précedente
+        lw $a0, 12($sp)
+        subi $a2, $s1, 1          # On soustrait 1 à la valeur de la nouvelle case
+        jal setValueCellIndiceI   # On détruit le mur du haut de la nouvelle case
+        j finCasserMurs
+
+    allerGauche:
+        lw $a0, 4($sp)            # Indice de la cellule courante
+        subi $a2, $s0, 8          # On soustrait 8 (1000 en binaire) à la valeur de la case précédente
+        jal setValueCellIndiceI   # On détruit le mur à gauche de la cas précédente
+        lw $a0, 12($sp)           # Indice de la cellule voisine non visité
+        subi $a2, $s1, 2          # On soustrait 2 (10 en binaire) à la valeur de la case précédente
+        jal setValueCellIndiceI   # On casse le mur à droite de la nouvelle case non visité
+
+    #epilogue 
+    finCasserMurs :
+        lw $ra , 0($sp)
+        lw $a0 , 4($sp)
+        lw $a1 , 8($sp)
+        lw $s0 , 12($sp)
+        lw $s1 , 16($sp)
+        lw $s1 , 20($sp)
+        addi $sp, $sp , 24
+
+        jr $ra
+###########################################################################
+
 ################################# Fonction AfficheTableau
 ###entrées: 
 ###   $a0: taille (en nombre d'entiers) du tableau à afficher
