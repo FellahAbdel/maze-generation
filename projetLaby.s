@@ -572,14 +572,15 @@ st_creer:
 #   $v0 : 1 si pile vide | 0 sinon
 st_est_vide:
     #Prologue
-    addi $sp, $sp, -8
+    addi $sp, $sp, -12
     sw $ra, 0($sp)
     sw $a0, 4($sp)
+    sw $s0, 8($sp)
 
     # Corps de la fonction
-    lw $t0, 4($a0)                  # la hauteur -> $t0
+    lw $s0, 4($a0)                  # la hauteur -> $s0
 
-    beqz $t0, pileVideTrue          # si $t0 = 0 la pile est vide
+    beqz $s0, pileVideTrue          # si $s0 = 0 la pile est vide
         li $v0, 0
         j finEstVide
 
@@ -590,7 +591,8 @@ st_est_vide:
     # Epilogue
     lw $ra, 0($sp)
     lw $a0, 4($sp)
-    addi $sp, $sp, 8
+    lw $s0, 8($sp)
+    addi $sp, $sp, 12 
 
     jr $ra
 
@@ -670,31 +672,37 @@ st_sommet:
 #   On modifie le tableau à l'addresse $a0
 st_empiler:
     # Prologue
-    addi $sp, $sp, -12
+    addi $sp, $sp, -24
     sw $ra, 0($sp)
     sw $a0, 4($sp)
     sw $a1, 8($sp)
+    sw $s0, 12($sp)
+    sw $s1, 16($sp)
+    sw $s4, 20($sp)
 
 
     # Corps de la fonction
-    li $t4, 4
-    lw $t0, 4($a0)          # la hauteur de la pile -> $t0
+    li $s4, 4
+    lw $s0, 4($a0)          # la hauteur de la pile -> $s0
 
-    addi $t1, $t0, 2        #  h + 2
-    mul $t1, $t1, $t4       #  4*(h + 2)
-    add $t1, $a0, $t1       #  t + 4*( h + 2)
+    addi $s1, $s0, 2        #  h + 2
+    mul $s1, $s1, $s4       #  4*(h + 2)
+    add $s1, $a0, $s1       #  t + 4*( h + 2)
 
-    sw $a1, 0($t1)          # On empile $a1
+    sw $a1, 0($s1)          # On empile $a1
 
-    addi $t0, $t0, 1        # Incrementation de la hauteur
-    sw $t0, 4($a0)          # Mise à jour de la hauteur
+    addi $s0, $s0, 1        # Incrementation de la hauteur
+    sw $s0, 4($a0)          # Mise à jour de la hauteur
 
 
     # Epilogue
     lw $ra, 0($sp)
     lw $a0, 4($sp)
     lw $a1, 8($sp)
-    addi $sp, $sp, 12
+    lw $s0, 12($sp)
+    lw $s1, 16($sp)
+    lw $s4, 20($sp)
+    addi $sp, $sp, 24
 
     jr $ra
 
@@ -707,29 +715,35 @@ st_empiler:
 #   On modifie juste le tableau à l'addresse $a0
 st_depiler:
     # Prologue
-    addi $sp, $sp, -8
+    addi $sp, $sp, -20
     sw $ra, 0($sp)
     sw $a0, 4($sp)
+    sw $s0, 8($sp)
+    sw $s1, 12($sp)
+    sw $s4, 16($sp)
 
 
     # Corps de la fonction
-    li $t1, 0
-    li $t4, 4
-    lw $t0, 4($a0)              # la hauteur -> $t0
-    addi $t0, $t0, 1
-    mul $t0, $t0, $t4
-    add $t0, $a0, $t0
+    li $s1, 0
+    li $s4, 4
+    lw $s0, 4($a0)              # la hauteur -> $s0
+    addi $s0, $s0, 1
+    mul $s0, $s0, $s4
+    add $s0, $a0, $s0
 
-    sw $t1, 0($t0)              # On remplace le sommet par 0
+    sw $s1, 0($s0)              # On remplace le sommet par 0
 
-    lw $t0, 4($a0)              # la hauteur -> $t0
-    addi $t0, $t0, -1           # On decremente la hauteur
-    sw $t0, 4($a0)              # Mis à jour de la hauteur
+    lw $s0, 4($a0)              # la hauteur -> $s0
+    addi $s0, $s0, -1           # On decremente la hauteur
+    sw $s0, 4($a0)              # Mis à jour de la hauteur
 
     # Epilogue
-    sw $ra, 0($sp)
-    sw $a0, 4($sp)
-    addi $sp, $sp, 8
+    lw $ra, 0($sp)
+    lw $a0, 4($sp)
+    lw $s0, 8($sp)
+    lw $s1, 12($sp)
+    lw $s4, 16($sp)
+    addi $sp, $sp, 20
 
     jr $ra
 ##########################################################################
@@ -1498,6 +1512,10 @@ genererLabyrinthe:
         move $a0, $t0               # Cellule courante
         move $a1, $s0               # Adresse du laby
         jal voisinsNonVisites
+
+        li $a0, 5
+        move $a1, $v0
+        jal AfficheTableau
 
         # S'il y aucune cellule voisine qui n'a été visite, on depile
         lw $t2, 16($v0)                     # Le nombre de cellule voisines non visités -> $t2
