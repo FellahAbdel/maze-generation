@@ -1509,8 +1509,12 @@ genererLabyrinthe:
 
     li $t1, 0                       # là la pile d'entiers n'est pas vide
     whilePileNonVide: bnez $t1 finGenererLabyrinthe
+         #   $a0 : l'indice de la cellule courante
+         #   $a1 : l'addresse du 1er octet du labyrinthe
+         #   $a2 : la taille du laby N
         move $a0, $t0               # Cellule courante
         move $a1, $s0               # Adresse du laby
+        lw $a2, 4($sp) 
         jal voisinsNonVisites
 
         li $a0, 5
