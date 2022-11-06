@@ -1346,7 +1346,6 @@ voisinsNonVisites:
 ####	  $a2 : indice du voisin de la cellule courante non visité
 #### Sortie : 
 #         $v0 : direction du voisin ( 0 : haut | 1 : droite | 2 : bas | 3 : gauche)
-
 DirectionVoisin: 
     # prologue 
     addi $sp, $sp , -36
@@ -1518,7 +1517,6 @@ genererLabyrinthe:
     move $a0, $s1                   # Addresse de la pile d'entiers
     jal st_empiler                  # On empile la cellule courante
 
-    li $t4, 200
     li $t1, 0                       # là la pile d'entiers n'est pas vide
     whilePileNonVide: bnez $t1 finGenererLabyrinthe  
         #   $a0 : l'indice de la cellule courante
@@ -1529,9 +1527,7 @@ genererLabyrinthe:
         lw $a2, 4($sp) 
         jal voisinsNonVisites
 
-        # li $a0, 5
-        # move $a1, $v0
-        # jal AfficheTableau
+
 
         # S'il y aucune cellule voisine qui n'a été visite, on depile
         lw $t2, 16($v0)                     # Le nombre de cellule voisines non visités -> $t2
@@ -1541,9 +1537,9 @@ genererLabyrinthe:
         move $a0, $v0                       # Adresse du 1er octet des cellules voisines non visites -> $a0
         jal aleaCellVoisines                # Tire moi une cellule parmis les voisines non visités
         
-        move $a2, $v0                       #$a2 : indice du voisin de la cellule courante non visité
-        lw $a0, 4($sp)                      #$a0 : entier N entrer par l'utilisateur 
-        move $a1, $t0                       #$a1 : indice de la cellule courante : X
+        move $a2, $v0                       # $a2 : indice du voisin de la cellule courante non visité
+        lw $a0, 4($sp)                      # $a0 : entier N entrer par l'utilisateur 
+        move $a1, $t0                       # $a1 : indice de la cellule courante : X
         jal DirectionVoisin                 # la direction d'où il faut casser le mur
 
                                             # $a1 : addresse du laby
@@ -1572,7 +1568,7 @@ genererLabyrinthe:
 
         finIfElseGenererLaby:
             move $a0, $s1                   # $a0 : Adresse de la pile d'entiers
-            jal st_est_vide
+            jal st_est_vide                 # On teste si la pile est vide
             move $t1, $v0
 
             j whilePileNonVide
@@ -1582,6 +1578,10 @@ genererLabyrinthe:
         lw $a0, 4($sp)                  # taille N du laby -> $a0
         move $a1, $s0                   # Adresse du laby  -> $a1
         jal enleverVisite
+
+        # 8 - C0 : cellule de depart, Cn : Cellule d'arriver
+        jal mettreCellDepartArrive
+        
 
         move $v0, $s0
         lw $ra, 0($sp)
@@ -1640,7 +1640,41 @@ enleverVisite:
 
         jr $ra
 #########################################################################
+################################ Fonction mettreCellDepartArrive
+# Entrés: 
+#   $a0 : Taille du laby
+#   $a1 : addresse du laby
+mettreCellDepartArrive:
+    # Prologue
+    addi $sp, $sp, -12
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $a1, 8($sp)
 
+
+    # Corps de la fonction
+    # Cellule de depart
+    li $a0, 0
+    jal getValueCellIndiceI
+    addi $a2, $v0, 16                           # On met le bit 4, à 1
+    jal setValueCellIndiceI
+
+    # Cellule d'arrivée     
+    lw $a0, 4($sp)
+    mul $a0, $a0, $a0
+    subi $a0, $a0, 1                            # l'indice de la dernière cellule -> $a0
+    jal getValueCellIndiceI
+    addi $a2, $v0, 32                           # On met le bit 5, à 1
+    jal setValueCellIndiceI
+
+
+    # Epilogue
+    lw $ra, 0($sp)
+    lw $a0, 4($sp)
+    lw $a1, 8($sp)
+    addi $sp, $sp, 12
+
+    jr $ra
 
 ################################# Fonction AfficheTableau
 ###entrées: 
