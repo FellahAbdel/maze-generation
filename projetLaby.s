@@ -875,7 +875,6 @@ afficheLaby:
 
         jr $ra
 
-
 ############################################################################
 ################################ Fonction getValueCellIndiceI
 #  Entrées :
@@ -1521,13 +1520,10 @@ genererLabyrinthe:
 
     li $t4, 200
     li $t1, 0                       # là la pile d'entiers n'est pas vide
-    whilePileNonVide: bnez $t1 finGenererLabyrinthe
-
-        addi $t4, $t4, -1
-        beqz $t4, finGenererLabyrinthe
-         #   $a0 : l'indice de la cellule courante
-         #   $a1 : l'addresse du 1er octet du labyrinthe
-         #   $a2 : la taille du laby N
+    whilePileNonVide: bnez $t1 finGenererLabyrinthe  
+        #   $a0 : l'indice de la cellule courante
+        #   $a1 : l'addresse du 1er octet du labyrinthe
+        #   $a2 : la taille du laby N
         move $a0, $t0               # Cellule courante
         move $a1, $s0               # Adresse du laby
         lw $a2, 4($sp) 
@@ -1583,6 +1579,10 @@ genererLabyrinthe:
 
     # Epilogue
     finGenererLabyrinthe:
+        lw $a0, 4($sp)                  # taille N du laby -> $a0
+        move $a1, $s0                   # Adresse du laby  -> $a1
+        jal enleverVisite
+
         move $v0, $s0
         lw $ra, 0($sp)
         lw $a0, 4($sp)
@@ -1592,6 +1592,7 @@ genererLabyrinthe:
 
         jr $ra
 ###########################################################################
+
 ############################# Fonction enleverVisite
 # Entrés:
 #   $a0 : Taille du laby
@@ -1632,13 +1633,14 @@ enleverVisite:
         lw $ra, 0($sp)
         lw $a0, 4($sp)
         lw $a1, 8($sp)
-        sw $s0, 12($sp)
-        sw $s1, 16($sp)
-        sw $s2, 20($sp)
+        lw $s0, 12($sp)
+        lw $s1, 16($sp)
+        lw $s2, 20($sp)
         addi $sp, $sp, 24
 
         jr $ra
 #########################################################################
+
 
 ################################# Fonction AfficheTableau
 ###entrées: 
