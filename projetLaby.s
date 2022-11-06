@@ -4,6 +4,8 @@
     Tableau: .asciiz "Tableau de taille: "
     Aladresse: .asciiz "à l'adresse: "
     espace: .asciiz " "
+    prompt: .asciiz "Entrez la taille N du labyrinthe : "
+    genreationTermine: .asciiz "\n Génération labyrinthe terminé !"
     
 
 .text
@@ -11,14 +13,28 @@
 
 __start:
 # corps du programme ...
+    # move $t0 $a0 #t0 contient le nombre d'arguments
+    # move $t1 $a1 #t1 contient l'adresse d'un tableau de pointeurs vers les arguments
+
+    # lw $t2 ($t1)
+    # la $a0 0($t2)
+    # move $s0, $a0
+    # li $v0 4
+    # syscall # print(argv[0])
+
+    li $v0, 4
+    la $a0, prompt
+    syscall
+
+    li $v0, 5
+    syscall
+    move $a0, $v0                       # la taille du laby -> $a0
+
     
     # Teste de la fonction genererLabyrinthe
     # $a0 : Taille N du laby
-    li $a0, 5
     jal genererLabyrinthe
 
-
-    li $a0, 5                           # la taille du laby 
     move $a1, $v0                       # l'addresse du laby
     jal afficheLaby
 
