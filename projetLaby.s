@@ -1592,6 +1592,53 @@ genererLabyrinthe:
 
         jr $ra
 ###########################################################################
+############################# Fonction enleverVisite
+# Entrés:
+#   $a0 : Taille du laby
+#   $a1 : Adresse du labyrinthe
+enleverVisite:
+    # Prologue
+    addi $sp, $sp, -24
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $a1, 8($sp)
+    sw $s0, 12($sp)
+    sw $s1, 16($sp)
+    sw $s2, 20($sp)
+
+
+    mul $s0, $a0, $a0               # N*N -> $s0
+    li $s2, 128
+    li $a0, 0
+    loopEnleverVisite: beq $a0, $s0 finEnleverVisite
+        jal getValueCellIndiceI                 
+        move $s1, $v0
+        # si $s1 >= 128, on soustrait 128
+        # sinon, on fait rien
+        bge		$s1, $s2, enlever128	# if $s1 >= $t1 then target
+        j finIfElseEnleverVisite
+
+        enlever128:
+            subi $a2, $s1, 128
+            jal setValueCellIndiceI
+            j finIfElseEnleverVisite
+        
+        finIfElseEnleverVisite:
+            addi $a0, $a0, 1
+            j loopEnleverVisite
+
+    # Epilogue
+    finEnleverVisite:
+        lw $ra, 0($sp)
+        lw $a0, 4($sp)
+        lw $a1, 8($sp)
+        sw $s0, 12($sp)
+        sw $s1, 16($sp)
+        sw $s2, 20($sp)
+        addi $sp, $sp, 24
+
+        jr $ra
+#########################################################################
 
 ################################# Fonction AfficheTableau
 ###entrées: 
