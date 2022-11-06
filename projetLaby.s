@@ -121,133 +121,133 @@ __start:
     # jal AfficheTableau
 
 
-    # Test de la fonction creerLaby
-    # $a0 : taille du laby. ex $a0 = 5
-    li $s1, 5
-    move $a0, $s1                       # la taille -> $s1
-    jal creerLabyrinthe
-    move $s7, $v0
+    # # Test de la fonction creerLaby
+    # # $a0 : taille du laby. ex $a0 = 5
+    # li $s1, 5
+    # move $a0, $s1                       # la taille -> $s1
+    # jal creerLabyrinthe
+    # move $s7, $v0
 
 
-    # Test de la fonction afficheLaby
-    # $a0 : taille du laby
-    # $a1 : Adresse du laby
-    move $s0, $v0                      # On sauvegarde addresse du 1er octet du laby -> $s0
-    move $a1, $s0
-    jal afficheLaby
+    # # Test de la fonction afficheLaby
+    # # $a0 : taille du laby
+    # # $a1 : Adresse du laby
+    # move $s0, $v0                      # On sauvegarde addresse du 1er octet du laby -> $s0
+    # move $a1, $s0
+    # jal afficheLaby
 
-    # Test de la fonction getValueCellIndiceI
-    # $a0 : indice i
-    # $a1 : addresse du laby
-    # $v0 : la valeur se trouvant à l'indice i
-    li $a0, 3
-    jal getValueCellIndiceI
-    move $a0, $v0
-    jal AfficheEntier
+    # # Test de la fonction getValueCellIndiceI
+    # # $a0 : indice i
+    # # $a1 : addresse du laby
+    # # $v0 : la valeur se trouvant à l'indice i
+    # li $a0, 3
+    # jal getValueCellIndiceI
+    # move $a0, $v0
+    # jal AfficheEntier
 
-    # Test de la fonction setValueCellIndiceI
-    # $a0 : l'indice i [0, N*N]
-    # $a1 : addresse du laby
-    # $a2 : nouvelle valeur à mettre
-    li $a0, 3
-    move $a1, $s0
-    li $a2, 16
-    jal setValueCellIndiceI
-
-
-    # Affiche le laby après  avoir mis 16 à l'indice 3
-    li $a0, 5
-    jal afficheLaby
-
-    # Test de la fonction getCellVoisinSellonDirection
-    # $a0 : indice cell courante
-    # $a1 : addresse du laby
-    # $a2 : direction d
-    # $a3 : taille N du laby
-    # $v0 : l'indice du voisin si trouvé
-    li $a0, 2
-    move $a1, $s0
-    li $a2,     3          # On peut changer  $a2, pour les autres voisins
-    move $a3, $s1
-    jal getIndiceVoisinSelonDirection
-    move $a0, $v0
-    jal AfficheEntier
+    # # Test de la fonction setValueCellIndiceI
+    # # $a0 : l'indice i [0, N*N]
+    # # $a1 : addresse du laby
+    # # $a2 : nouvelle valeur à mettre
+    # li $a0, 3
+    # move $a1, $s0
+    # li $a2, 16
+    # jal setValueCellIndiceI
 
 
-    # Test de la fonction getIndicesToutesVoisines
-    # $a0 : l'indice de la cellule courante
-    # $a1 : l'addresse du labyrinthe
-    # $a2 : Taille du laby
-    # $v0 : Addresse des cellules voisines
-    li $a0, 0
-    move $a1, $s0
-    li $a2, 5
-    jal getIndicesToutesVoisines
-    move $s2, $v0                           # On sauvegarde l'addresse du premier octet
-    move $a1, $s2                           # Addresse du labyrinthe -> $a1
-    lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
-    jal AfficheTableau                      # Affiche toutes les cellules voisines
+    # # Affiche le laby après  avoir mis 16 à l'indice 3
+    # li $a0, 5
+    # jal afficheLaby
+
+    # # Test de la fonction getCellVoisinSellonDirection
+    # # $a0 : indice cell courante
+    # # $a1 : addresse du laby
+    # # $a2 : direction d
+    # # $a3 : taille N du laby
+    # # $v0 : l'indice du voisin si trouvé
+    # li $a0, 2
+    # move $a1, $s0
+    # li $a2,     3          # On peut changer  $a2, pour les autres voisins
+    # move $a3, $s1
+    # jal getIndiceVoisinSelonDirection
+    # move $a0, $v0
+    # jal AfficheEntier
 
 
-    # Test de la fonction aleaCellVoisines
-    # $a0 : adresse du 1er octet des cellules voisines
-    # $v0 : une cellule tirée aléatoirement parmis ces voisins
-    move $a0, $s2                           # Addresse du 1er octet du tableau de toutes les cellules voisines
-    jal aleaCellVoisines                    # Tire moi une cellule parmis tes voisins
-    move $a0, $v0                           # l'indice de la cellule tiré -> $a0
-    jal AfficheEntier                       # Affiche l'indice de la cellule tiré
+    # # Test de la fonction getIndicesToutesVoisines
+    # # $a0 : l'indice de la cellule courante
+    # # $a1 : l'addresse du labyrinthe
+    # # $a2 : Taille du laby
+    # # $v0 : Addresse des cellules voisines
+    # li $a0, 0
+    # move $a1, $s0
+    # li $a2, 5
+    # jal getIndicesToutesVoisines
+    # move $s2, $v0                           # On sauvegarde l'addresse du premier octet
+    # move $a1, $s2                           # Addresse du labyrinthe -> $a1
+    # lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
+    # jal AfficheTableau                      # Affiche toutes les cellules voisines
 
 
-    # Test de la fonction MarqueVisite
-    # $a0 : l'indice
-    # $a1 : l'addresse du 1er octet du laby
-    li $a0, 0                               # On marque la cell 0 comme visite
-    move $a1, $s0                           # Addresse du laby -> $a1
-    jal marqueVisite                        # On marque la cell 0 visitee
-
-    # On affice le laby après avoir marquee la cell 0 comme visitée
-    move $a0, $s1                           # la taille du laby 
-    move $a1, $s0                           # l'addresse du laby
-    jal afficheLaby
-
-    # Test de la fonction testeVisite
-    # $a0 : L'indice de la cellule à tester
-    # $a1 : l'addresse du labyrinthe
-    li $a0, 0                           # la cell d'indice où on 143
-    move $a1, $s0                       # l'addresse du laby
-    jal testeVisite
-    move $a0, $v0
-    jal AfficheEntier                   # affiche 1 car la cellule à été visité
+    # # Test de la fonction aleaCellVoisines
+    # # $a0 : adresse du 1er octet des cellules voisines
+    # # $v0 : une cellule tirée aléatoirement parmis ces voisins
+    # move $a0, $s2                           # Addresse du 1er octet du tableau de toutes les cellules voisines
+    # jal aleaCellVoisines                    # Tire moi une cellule parmis tes voisins
+    # move $a0, $v0                           # l'indice de la cellule tiré -> $a0
+    # jal AfficheEntier                       # Affiche l'indice de la cellule tiré
 
 
-    # Test de la fonction voisinsNonVisite
-    # $a0 : Indice de la cellule courante
-    # $a1 : Addresse du laby
-    # $v0 : Addresse des cellules non visites
-    li $a0, 0
-    move $a1, $s0
-    move $a2, $s1
-    jal voisinsNonVisites
+    # # Test de la fonction MarqueVisite
+    # # $a0 : l'indice
+    # # $a1 : l'addresse du 1er octet du laby
+    # li $a0, 0                               # On marque la cell 0 comme visite
+    # move $a1, $s0                           # Addresse du laby -> $a1
+    # jal marqueVisite                        # On marque la cell 0 visitee
+
+    # # On affice le laby après avoir marquee la cell 0 comme visitée
+    # move $a0, $s1                           # la taille du laby 
+    # move $a1, $s0                           # l'addresse du laby
+    # jal afficheLaby
+
+    # # Test de la fonction testeVisite
+    # # $a0 : L'indice de la cellule à tester
+    # # $a1 : l'addresse du labyrinthe
+    # li $a0, 0                           # la cell d'indice où on 143
+    # move $a1, $s0                       # l'addresse du laby
+    # jal testeVisite
+    # move $a0, $v0
+    # jal AfficheEntier                   # affiche 1 car la cellule à été visité
+
+
+    # # Test de la fonction voisinsNonVisite
+    # # $a0 : Indice de la cellule courante
+    # # $a1 : Addresse du laby
+    # # $v0 : Addresse des cellules non visites
+    # li $a0, 2
+    # move $a1, $s0
+    # move $a2, $s1
+    # jal voisinsNonVisites
     
-    move $a1, $v0
-    lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
-    jal AfficheTableau                      # Affiche toutes les cellules voisines
+    # move $a1, $v0
+    # lw $a0, 16($v0)                         # la taille du tableau des cellules voisines -> 16($v0)
+    # jal AfficheTableau                      # Affiche toutes les cellules voisines
 
-    # Test de la fonction casserMurs
-    # $a0 : Indice cellule courante
-    # $a1 : addresse du laby
-    # $a2 : indice cellule voisine non visité
-    # $a3 : Direction d, où l'on va
-    li $a0, 7
-    move $a1, $s0
-    li $a2,8
-    li $a3, 1
-    jal casserMurs 
+    # # Test de la fonction casserMurs
+    # # $a0 : Indice cellule courante
+    # # $a1 : addresse du laby
+    # # $a2 : indice cellule voisine non visité
+    # # $a3 : Direction d, où l'on va
+    # li $a0, 7
+    # move $a1, $s0
+    # li $a2, 6
+    # li $a3, 3
+    # jal casserMurs 
 
 
-    li $a0, 5                           # la taille du laby 
-    move $a1, $s0                       # l'addresse du laby
-    jal afficheLaby
+    # li $a0, 5                           # la taille du laby 
+    # move $a1, $s0                       # l'addresse du laby
+    # jal afficheLaby
 
 
     # Teste de la fonction genererLabyrinthe
@@ -256,9 +256,9 @@ __start:
     jal genererLabyrinthe
 
 
-    #li $a0, 5                           # la taille du laby 
-    #move $a1, $v0                       # l'addresse du laby
-    #jal afficheLaby
+    li $a0, 5                           # la taille du laby 
+    move $a1, $v0                       # l'addresse du laby
+    jal afficheLaby
 
 j Exit # saut a la fin du programme
 
@@ -1132,25 +1132,37 @@ getIndicesToutesVoisines:
 #   $v0 : L'indice d'une cellule tiré aléatoirement
 aleaCellVoisines:
     # Prologue
-    addi $sp, $sp, -16
+    addi $sp, $sp, -24
     sw $ra, 0($sp)
     sw $a0, 4($sp)
     sw $s0, 8($sp)
     sw $a1, 12($sp)
+    sw $s1, 16($sp)
+    sw $s2, 20($sp)
 
     # Corps de la fonction
     move $s0, $a0
     lw $a1, 16($a0)         # Nombre de cellule voisines
     li $v0, 42  
     syscall                 # $a0 contient un nombre entre [0, $a1[
-    move $v0, $a0           # On recupère cette valeur
+    # move $v0, $a0           # On recupère cette valeur
+    
+    # Il faut recuper l'indice se trouvant à l'indice $a0, et pas $a0
+    # Calcul de l'addresse i
+    li $s1, 4
+    mul $s2, $a0, $s1
+    lw $a0, 4($sp)
+    add $s2, $s2, $a0
 
+    lw $v0, 0($s2)              # On recupère la valeur se trouvant à l'indice $a0 alea
     # Epilogue
     lw $ra, 0($sp)
     lw $a0, 4($sp)
     lw $s0, 8($sp)
     lw $a1, 12($sp)
-    addi $sp, $sp, 16 
+    lw $s1, 16($sp)
+    lw $s2, 20($sp)
+    addi $sp, $sp, 24 
 
     jr $ra
 
@@ -1270,7 +1282,7 @@ voisinsNonVisites:
 
     move $s0, $v0                     # addresse du 1er octet des cellule non visitées -> $s0
 
-    li $a0, 1                    # On restore l'indice
+    lw $a0, 4($sp)                    # On restaure l'indice
     jal getIndicesToutesVoisines      # Toutes les cellules voisines de $a0 -> $v0
     move $s1, $v0                     # Addresse du 1er octet de toutes les cellules voisines
 
@@ -1507,8 +1519,12 @@ genererLabyrinthe:
     move $a0, $s1                   # Addresse de la pile d'entiers
     jal st_empiler                  # On empile la cellule courante
 
+    li $t4, 200
     li $t1, 0                       # là la pile d'entiers n'est pas vide
     whilePileNonVide: bnez $t1 finGenererLabyrinthe
+
+        addi $t4, $t4, -1
+        beqz $t4, finGenererLabyrinthe
          #   $a0 : l'indice de la cellule courante
          #   $a1 : l'addresse du 1er octet du labyrinthe
          #   $a2 : la taille du laby N
@@ -1517,13 +1533,13 @@ genererLabyrinthe:
         lw $a2, 4($sp) 
         jal voisinsNonVisites
 
-        li $a0, 5
-        move $a1, $v0
-        jal AfficheTableau
+        # li $a0, 5
+        # move $a1, $v0
+        # jal AfficheTableau
 
         # S'il y aucune cellule voisine qui n'a été visite, on depile
         lw $t2, 16($v0)                     # Le nombre de cellule voisines non visités -> $t2
-        bgez $t2 onDepile                   # Depilement
+        beqz $t2 onDepile                   # Depilement
         
         # Sinon
         move $a0, $v0                       # Adresse du 1er octet des cellules voisines non visites -> $a0
@@ -1562,6 +1578,7 @@ genererLabyrinthe:
             move $a0, $s1                   # $a0 : Adresse de la pile d'entiers
             jal st_est_vide
             move $t1, $v0
+
             j whilePileNonVide
 
     # Epilogue
