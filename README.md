@@ -31,6 +31,8 @@ You can expect to observe a result similar to this:
 
 ![maze generated](./print-maz-output.png)
 
+The `XX` is the entry point and `00` is the destination point.
+
 # Conclusion
 
 As evident, it would be more efficient to automatically redirect the generated labyrinth into a file instead of displaying it in the terminal. Unfortunately, we didn't have the time to implement this functionality. Feel free to work on it if needed.
